@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overfitting &amp; Underfitting Explorer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sans:system-ui,-apple-system,sans-serif;
+  --tx:#1a1a18;--tx2:#5f5e5a;--tx3:#888780;
+  --s0:#f1efe8;--s1:#e8e6df;--s2:#ffffff;
+  --bd:rgba(0,0,0,0.1);--bds:rgba(0,0,0,0.18);
+  --blue:#185fa5;--bluebg:#e6f1fb;--bluetx:#0c447c;
+  --red:#a32d2d;--redbg:#fcebeb;--redtx:#791f1f;
+  --green:#3b6d11;--greenbg:#eaf3de;--greentx:#27500a;
+  --amber:#854f0b;--amberbg:#faeeda;--ambertx:#633806;
+  --r:8px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --tx:#e8e6df;--tx2:#a0a09a;--tx3:#5f5e5a;
+  --s0:#1a1a18;--s1:#2c2c2a;--s2:#383836;
+  --bd:rgba(255,255,255,0.1);--bds:rgba(255,255,255,0.18);
+  --blue:#5b9ef7;--bluebg:#042c53;--bluetx:#b5d4f4;
+  --red:#f09595;--redbg:#501313;--redtx:#f7c1c1;
+  --green:#97c459;--greenbg:#173404;--greentx:#c0dd97;
+  --amber:#ef9f27;--amberbg:#412402;--ambertx:#fac775;
+}}
+body{font-family:var(--sans);background:var(--s0);color:var(--tx);padding:1.5rem 1rem;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto}
+h1{font-size:22px;font-weight:500;margin-bottom:.2rem}
+.sub{font-size:14px;color:var(--tx2);margin-bottom:1.5rem;line-height:1.6}
+
+.tabs{display:flex;gap:3px;background:var(--s1);border-radius:10px;padding:4px;margin-bottom:1.5rem}
+.tab{flex:1;padding:7px 4px;font-size:13px;font-family:var(--sans);border:none;border-radius:7px;cursor:pointer;background:transparent;color:var(--tx2);transition:all .15s}
+.tab.on{background:var(--s2);color:var(--tx);font-weight:500;border:0.5px solid var(--bds)}
+.panel{display:none}.panel.on{display:block}
+
+canvas{display:block;width:100%;border-radius:10px;border:0.5px solid var(--bd);background:var(--s2)}
+
+.ctrl{display:flex;align-items:center;gap:10px;margin-bottom:.7rem}
+.ctrl label{font-size:13px;color:var(--tx2);width:160px;flex-shrink:0}
+.ctrl input[type=range]{flex:1;accent-color:var(--blue)}
+.ctrl .v{font-size:13px;font-weight:500;color:var(--tx);width:42px;text-align:right}
+
+.btns{display:flex;gap:6px;margin:.9rem 0;flex-wrap:wrap}
+button{padding:6px 14px;font-size:13px;font-family:var(--sans);border:0.5px solid var(--bds);border-radius:var(--r);background:transparent;color:var(--tx);cursor:pointer;transition:all .12s}
+button:hover{background:var(--s1)}
+button:active{transform:scale(.98)}
+button.hi{background:var(--bluebg);color:var(--bluetx);border-color:var(--blue)}
+
+.stats{display:flex;gap:8px;margin:.9rem 0;flex-wrap:wrap}
+.stat{background:var(--s1);border-radius:var(--r);padding:.5rem .8rem;flex:1;min-width:100px}
+.stat-l{font-size:11px;color:var(--tx2);margin-bottom:2px}
+.stat-v{font-size:15px;font-weight:500}
+
+.note{font-size:13px;line-height:1.6;padding:.6rem .85rem;border-radius:0 var(--r) var(--r) 0;margin:.9rem 0}
+.note.blue{border-left:3px solid var(--blue);background:var(--bluebg);color:var(--bluetx)}
+.note.red{border-left:3px solid var(--red);background:var(--redbg);color:var(--redtx)}
+.note.green{border-left:3px solid var(--green);background:var(--greenbg);color:var(--greentx)}
+.note.amber{border-left:3px solid var(--amber);background:var(--amberbg);color:var(--ambertx)}
+
+.leg{display:flex;gap:12px;flex-wrap:wrap;margin-top:.6rem}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--tx2)}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.line{width:20px;height:2.5px;border-radius:2px;flex-shrink:0}
+
+.sec{font-size:16px;font-weight:500;margin:1.5rem 0 .6rem;padding-top:1.25rem;border-top:0.5px solid var(--bd)}
+.prose{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:.75rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:.75rem 0}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}}
+.card2{background:var(--s1);border-radius:var(--r);padding:.7rem .9rem}
+.card2-t{font-size:13px;font-weight:500;margin-bottom:3px}
+.card2-b{font-size:12px;color:var(--tx2);line-height:1.5}
+
+table{width:100%;border-collapse:collapse;font-size:13px;margin:.75rem 0}
+th{font-weight:500;color:var(--tx2);text-align:left;padding:6px 10px;border-bottom:0.5px solid var(--bds);font-size:12px}
+td{padding:7px 10px;border-bottom:0.5px solid var(--bd);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--tx2);font-weight:500}
+
+.scen{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.9rem}
+.scen button{font-size:12px;padding:4px 11px}
+.scen button.on{background:var(--bluebg);color:var(--bluetx);border-color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Overfitting &amp; Underfitting</h1>
+  <p class="sub">When a model is too simple it misses the pattern. When it's too complex it memorizes the noise. Use the tabs below to explore both problems hands-on.</p>
+
+  <div class="tabs">
+    <button class="tab on" data-t="fit">Fit a curve</button>
+    <button class="tab" data-t="lc">Learning curves</button>
+    <button class="tab" data-t="reg">Taming overfitting</button>
+    <button class="tab" data-t="ref">Quick reference</button>
+  </div>
+
+  <div id="p-fit" class="panel on">
+    <canvas id="c-fit" data-w="700" data-h="300"></canvas>
+    <div class="leg">
+      <div class="leg-i"><div class="dot" style="background:#185fa5"></div>underlying pattern</div>
+      <div class="leg-i"><div class="dot" style="background:#D85A30"></div>training points</div>
+      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>model's fit</div>
+    </div>
+    <div class="btns">
+      <button onclick="setPreset(1,20,0.2)">Too simple (degree 1)</button>
+      <button onclick="setPreset(4,20,0.2)">About right (degree 4)</button>
+      <button onclick="setPreset(14,20,0.2)">Too complex (degree 14)</button>
+      <button class="hi" onclick="fitRegen()">Shuffle data</button>
+    </div>
+    <div class="ctrl"><label>Model complexity (degree)</label><input type="range" id="s-deg" min="1" max="15" step="1" value="1" oninput="fitDraw()"><span class="v" id="v-deg">1</span></div>
+    <div class="ctrl"><label>Number of training points</label><input type="range" id="s-n" min="8" max="60" step="1" value="20" oninput="fitRegen()"><span class="v" id="v-n">20</span></div>
+    <div class="ctrl"><label>How noisy the data is</label><input type="range" id="s-noise" min="0" max="0.6" step="0.05" value="0.2" oninput="fitRegen()"><span class="v" id="v-noise">0.20</span></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-l">Training error</div><div class="stat-v" id="st-tr">—</div></div>
+      <div class="stat"><div class="stat-l">Test error</div><div class="stat-v" id="st-te">—</div></div>
+      <div class="stat"><div class="stat-l">Generalisation gap</div><div class="stat-v" id="st-gap">—</div></div>
+      <div class="stat"><div class="stat-l">What's happening</div><div class="stat-v" id="st-dx">—</div></div>
+    </div>
+    <div id="n-fit" class="note blue"></div>
+  </div>
+
+  <div id="p-lc" class="panel">
+    <div class="scen" id="lc-btns">
+      <button class="on" data-s="under">Underfitting model</button>
+      <button data-s="over">Overfitting model</button>
+      <button data-s="good">Well-fitted model</button>
+      <button data-s="reg">After regularizing</button>
+    </div>
+    <canvas id="c-lc" data-w="700" data-h="300"></canvas>
+    <div class="leg" style="margin-top:.6rem">
+      <div class="leg-i"><div class="line" style="background:#185fa5"></div>training error</div>
+      <div class="leg-i"><div class="line" style="background:#D85A30"></div>validation error</div>
+    </div>
+    <div id="n-lc" class="note blue" style="margin-top:.9rem"></div>
+  </div>
+
+  <div id="p-reg" class="panel">
+    <canvas id="c-reg" data-w="700" data-h="300"></canvas>
+    <div class="leg">
+      <div class="leg-i"><div class="dot" style="background:#D85A30"></div>data points</div>
+      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>with regularization</div>
+      <div class="leg-i"><div class="line" style="background:#888780;opacity:.7"></div>without regularization</div>
+    </div>
+    <div class="btns"><button class="hi" onclick="regRegen()">Shuffle data</button></div>
+    <div class="ctrl"><label>Noise level</label><input type="range" id="r-noise" min="0.05" max="0.7" step="0.05" value="0.35" oninput="regRegen()"><span class="v" id="rv-noise">0.35</span></div>
+    <div class="ctrl"><label>Model complexity (degree)</label><input type="range" id="r-deg" min="3" max="14" step="1" value="10" oninput="regDraw()"><span class="v" id="rv-deg">10</span></div>
+    <div class="ctrl"><label>Penalty strength (λ)</label><input type="range" id="r-lam" min="0" max="1" step="0.02" value="0" oninput="regDraw()"><span class="v" id="rv-lam">0.00</span></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-l">Without penalty</div><div class="stat-v" id="rr-u">—</div></div>
+      <div class="stat"><div class="stat-l">With penalty</div><div class="stat-v" id="rr-r">—</div></div>
+      <div class="stat"><div class="stat-l">Improvement</div><div class="stat-v" id="rr-i">—</div></div>
+    </div>
+    <div id="n-reg" class="note blue"></div>
+  </div>
+
+  <div id="p-ref" class="panel">
+    <table>
+      <thead><tr><th></th><th>Underfitting (too simple)</th><th>Overfitting (too complex)</th></tr></thead>
+      <tbody>
+        <tr><td>Training error</td><td>High</td><td>Low</td></tr>
+        <tr><td>Test error</td><td>Also high</td><td>High</td></tr>
+        <tr><td>Gap between them</td><td>Small, though both are stuck high</td><td>Large</td></tr>
+        <tr><td>Root cause</td><td>The model doesn't have enough capacity to learn the real pattern</td><td>The model has too much capacity and memorizes the noise</td></tr>
+        <tr><td>How it looks</td><td>Both curves plateau at high error and stay close together</td><td>A wide gap persists between training and validation error</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sec">Ways to fix underfitting</div>
+    <div class="grid2">
+      <div class="card2"><div class="card2-t">Increase model capacity</div><div class="card2-b">Use a higher-degree polynomial, a deeper network, or more trees. Give the model room to learn.</div></div>
+      <div class="card2"><div class="card2-t">Add better features</div><div class="card2-b">Create interaction terms or bring in domain knowledge the model currently can't see.</div></div>
+      <div class="card2"><div class="card2-t">Ease off regularization</div><div class="card2-b">If λ is too high the model is over-penalized and can't fit even the real pattern. Lower it gradually.</div></div>
+      <div class="card2"><div class="card2-t">Train for more epochs</div><div class="card2-b">In neural networks, the model may simply need more passes through the data before it converges.</div></div>
+    </div>
+
+    <div class="sec">Ways to fix overfitting</div>
+    <div class="grid2">
+      <div class="card2"><div class="card2-t">Collect more data</div><div class="card2-b">The most dependable fix. A larger dataset is much harder to memorize, so the model is forced to generalize.</div></div>
+      <div class="card2"><div class="card2-t">Add a regularization penalty</div><div class="card2-b">Ridge (L2) shrinks all coefficients toward zero. Lasso (L1) goes further and zeros out the least useful ones entirely.</div></div>
+      <div class="card2"><div class="card2-t">Simplify the model</div><div class="card2-b">Fewer layers, a lower polynomial degree, shallower trees. Match the model's capacity to the problem's real complexity.</div></div>
+      <div class="card2"><div class="card2-t">Stop at the right time</div><div class="card2-b">Watch the validation error during training. Once it starts climbing, stop. Training error may still be falling, but validation error is what matters.</div></div>
+      <div class="card2"><div class="card2-t">Use dropout (neural nets)</div><div class="card2-b">Randomly switch off neurons during training so the network can't rely on any single path, so it builds more robust representations.</div></div>
+      <div class="card2"><div class="card2-t">Cross-validate your choices</div><div class="card2-b">k-fold cross-validation gives a reliable read on how well the model generalizes, without ever touching the test set.</div></div>
+    </div>
+
+    <div class="sec">The bias-variance tradeoff</div>
+    <canvas id="c-bv" data-w="700" data-h="220"></canvas>
+    <div class="leg" style="margin-top:.6rem">
+      <div class="leg-i"><div class="line" style="background:#185fa5"></div>bias²</div>
+      <div class="leg-i"><div class="line" style="background:#D85A30"></div>variance</div>
+      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>total error</div>
+    </div>
+    <p class="prose" style="margin-top:.75rem">As you make a model more complex, it becomes less biased (it can fit more patterns) but more variable (it reacts more to noise in the data). The green dot marks the sweet spot, where total error reaches its minimum. Tuning hyperparameters and model selection are really just searches for that point.</p>
+  </div>
+</div>
+
+<script>
+function cvs(id){
+  const c=document.getElementById(id);
+  const dpr=window.devicePixelRatio||1;
+  const LW=parseInt(c.getAttribute('data-w')||700);
+  const LH=parseInt(c.getAttribute('data-h')||300);
+  c.width=LW*dpr; c.height=LH*dpr;
+  c.style.width='100%'; c.style.height=LH+'px';
+  const x=c.getContext('2d');
+  x.setTransform(dpr,0,0,dpr,0,0);
+  return {x,W:LW,H:LH};
+}
+
+function dark(){return window.matchMedia('(prefers-color-scheme:dark)').matches}
+function col(n){
+  const d=dark();
+  return ({
+    blue:d?'#5b9ef7':'#185fa5', red:d?'#f09595':'#D85A30',
+    green:d?'#97c459':'#3b6d11', gray:d?'#666663':'#b4b2a9',
+    grid:d?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.055)',
+    axis:d?'rgba(255,255,255,0.14)':'rgba(0,0,0,0.12)',
+    label:d?'rgba(255,255,255,0.36)':'rgba(0,0,0,0.32)',
+    bg:d?'#383836':'#ffffff'
+  })[n]||'#888';
+}
+
+let rngS=12345;
+function rng(){rngS=(rngS*1664525+1013904223)&0x7fffffff;return rngS/0x7fffffff;}
+function randn(){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function resetRng(s){rngS=s;}
+
+function sig(x){return Math.sin(x*Math.PI)+0.4*Math.sin(2.2*x*Math.PI);}
+
+function genPts(n,noise,seed){
+  resetRng(seed);
+  const xs=[],ys=[];
+  for(let i=0;i<n;i++){xs.push(-1+2*rng());ys.push(sig(xs[i])+randn()*noise);}
+  return {xs,ys};
+}
+
+function polyFit(xs,ys,deg,lam){
+  const n=xs.length,d=deg+1;
+  const X=xs.map(x=>Array.from({length:d},(_,i)=>Math.pow(x,i)));
+  const Xt=X[0].map((_,j)=>X.map(r=>r[j]));
+  const XtX=Xt.map(r=>Xt[0].map((_,j)=>r.reduce((s,_,k)=>s+r[k]*X[k][j]*0+Xt[r.indexOf?0:0])));
+  const A=Array.from({length:d},(_,i)=>Array.from({length:d},(_,j)=>Xt[i].reduce((s,v,k)=>s+v*X[k][j],0)+(i===j&&i>0?lam*30:0)));
+  const b=Xt.map(r=>r.reduce((s,v,i)=>s+v*ys[i],0));
+  return gaussElim(A,b);
+}
+
+function gaussElim(A,b){
+  const n=A.length;
+  const M=A.map((r,i)=>[...r,b[i]]);
+  for(let c=0;c<n;c++){
+    let mx=c;
+    for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[mx][c]))mx=r;
+    [M[c],M[mx]]=[M[mx],M[c]];
+    const pv=M[c][c];if(Math.abs(pv)<1e-12)continue;
+    M[c]=M[c].map(v=>v/pv);
+    for(let r=0;r<n;r++)if(r!==c){const f=M[r][c];M[r]=M[r].map((v,j)=>v-f*M[c][j]);}
+  }
+  return M.map(r=>r[n]);
+}
+
+function polyEval(coef,x){return coef.reduce((s,c,i)=>s+c*Math.pow(x,i),0);}
+function mse(ys,yh){return ys.reduce((s,y,i)=>s+(y-yh[i])**2,0)/ys.length;}
+
+function axes(x,W,H,pad,xlo,xhi,ylo,yhi){
+  const tx=wx=>(wx-xlo)/(xhi-xlo)*(W-2*pad)+pad;
+  const ty=wy=>H-pad-(wy-ylo)/(yhi-ylo)*(H-2*pad);
+  x.strokeStyle=col('grid');x.lineWidth=0.5;
+  for(let gx=Math.ceil(xlo);gx<=Math.floor(xhi);gx++){x.beginPath();x.moveTo(tx(gx),pad);x.lineTo(tx(gx),H-pad);x.stroke();}
+  if(ylo<0&&yhi>0){x.strokeStyle=col('axis');x.lineWidth=1;x.beginPath();x.moveTo(pad,ty(0));x.lineTo(W-pad,ty(0));x.stroke();}
+  return {tx,ty};
+}
+
+function curve(x,tx,ty,coef,xlo,xhi,ylo,yhi,color,width,dash){
+  x.beginPath();x.strokeStyle=color;x.lineWidth=width;
+  if(dash)x.setLineDash(dash);else x.setLineDash([]);
+  let first=true,pen=false;
+  for(let i=0;i<=300;i++){
+    const wx=xlo+(xhi-xlo)*i/300;
+    const wy=polyEval(coef,wx);
+    if(wy<ylo-2||wy>yhi+2){pen=false;continue;}
+    const cy=Math.max(ylo,Math.min(yhi,wy));
+    if(!pen){x.moveTo(tx(wx),ty(cy));pen=true;}else x.lineTo(tx(wx),ty(cy));
+  }
+  x.stroke();x.setLineDash([]);
+}
+
+let fitData=null,fitSeed=1;
+
+function fitRegen(){
+  fitSeed=Math.floor(Math.random()*99999)+1;
+  fitData=null;fitDraw();
+}
+
+function setPreset(deg,n,noise){
+  document.getElementById('s-deg').value=deg;
+  document.getElementById('v-deg').textContent=deg;
+  document.getElementById('s-n').value=n;
+  document.getElementById('v-n').textContent=n;
+  document.getElementById('s-noise').value=noise;
+  document.getElementById('v-noise').textContent=noise.toFixed(2);
+  fitData=null;fitDraw();
+}
+
+function fitDraw(){
+  const deg=parseInt(document.getElementById('s-deg').value);
+  const n=parseInt(document.getElementById('s-n').value);
+  const noise=parseFloat(document.getElementById('s-noise').value);
+  document.getElementById('v-deg').textContent=deg;
+  document.getElementById('v-n').textContent=n;
+  document.getElementById('v-noise').textContent=noise.toFixed(2);
+  if(!fitData)fitData=genPts(n,noise,fitSeed);
+  const {xs,ys}=fitData;
+  const coef=polyFit(xs,ys,deg,0);
+  const test=genPts(60,0.1,fitSeed+777);
+  const tr=mse(ys,xs.map(x=>polyEval(coef,x)));
+  const te=mse(test.ys,test.xs.map(x=>polyEval(coef,x)));
+  const gap=te-tr;
+  document.getElementById('st-tr').textContent=tr.toFixed(3);
+  document.getElementById('st-te').textContent=te.toFixed(3);
+  document.getElementById('st-gap').textContent=gap.toFixed(3);
+  let dx,cls,msg;
+  if(deg<=2&&tr>0.12){dx='Too simple';cls='blue';msg='The curve can\'t bend enough to follow the data. Both training and test errors are high, a classic sign of underfitting. Try raising the complexity.';}
+  else if(gap>0.15&&deg>5){dx='Overfitting';cls='red';msg='The curve threads every training point, including the noisy ones, and falls apart on new data. Training error looks great, test error does not.';}
+  else if(tr<0.08&&te<0.14){dx='Good fit';cls='green';msg='Training and test errors are both low and close together. The model has learned the real pattern without memorizing the noise.';}
+  else{dx='Reasonable';cls='amber';msg=`Degree ${deg}: training error ${tr.toFixed(3)}, test error ${te.toFixed(3)}, gap ${gap.toFixed(3)}. Keep adjusting to find the sweet spot.`;}
+  document.getElementById('st-dx').textContent=dx;
+  const nb=document.getElementById('n-fit');nb.className='note '+cls;nb.textContent=msg;
+
+  const {x,W,H}=cvs('c-fit');
+  const pad=28,ylo=-2,yhi=2;
+  const {tx,ty}=axes(x,W,H,pad,-1,1,ylo,yhi);
+  x.beginPath();x.strokeStyle=col('blue');x.lineWidth=1.5;x.setLineDash([5,4]);
+  for(let i=0;i<=200;i++){const wx=-1+2*i/200;i===0?x.moveTo(tx(wx),ty(sig(wx))):x.lineTo(tx(wx),ty(sig(wx)));}
+  x.stroke();x.setLineDash([]);
+  curve(x,tx,ty,coef,-1,1,ylo,yhi,col('green'),2.5);
+  xs.forEach((px,i)=>{x.beginPath();x.arc(tx(px),ty(Math.max(ylo,Math.min(yhi,ys[i]))),4,0,Math.PI*2);x.fillStyle=col('red');x.fill();});
+}
+
+const lcS={
+  under:{cls:'blue',msg:'Both curves level off high and stay close together. Throwing more data at this won\'t help much. The model simply isn\'t expressive enough to learn the pattern. The fix is to increase complexity.',
+    tr:(n,N)=>0.44+0.1*Math.exp(-n/N*2.5),val:(n,N)=>0.50+0.08*Math.exp(-n/N*2)},
+  over:{cls:'red',msg:'Notice the wide gap that never closes. The model nails the training data but stumbles badly on anything new. It has memorized the examples rather than learning from them. Regularization, a simpler model, or more data can help.',
+    tr:(n,N)=>0.04+0.32*Math.exp(-n/N*9),val:(n,N)=>0.58-0.12*(1-Math.exp(-n/N*2))},
+  good:{cls:'green',msg:'As more data is added, both curves drop and meet at a low error rate. This is exactly what you want. The model has found the true pattern and can apply it to data it\'s never seen.',
+    tr:(n,N)=>0.07+0.28*Math.exp(-n/N*6),val:(n,N)=>0.11+0.30*Math.exp(-n/N*4)},
+  reg:{cls:'green',msg:'Regularization reins in the model\'s tendency to overfit. The training error is a little higher than before, but the validation error drops significantly, a worthwhile trade-off.',
+    tr:(n,N)=>0.13+0.18*Math.exp(-n/N*5),val:(n,N)=>0.16+0.20*Math.exp(-n/N*4.5)},
+};
+let lcCur='under';
+
+function lcDraw(){
+  const sc=lcS[lcCur];
+  const {x,W,H}=cvs('c-lc');
+  const pad=36,N=60,ylo=0,yhi=0.75;
+  const tx=wx=>(wx/N)*(W-2*pad)+pad;
+  const ty=wy=>H-pad-(wy/yhi)*(H-2*pad);
+  x.strokeStyle=col('grid');x.lineWidth=0.5;
+  [10,20,30,40,50,60].forEach(v=>{x.beginPath();x.moveTo(tx(v),pad);x.lineTo(tx(v),H-pad);x.stroke();});
+  [0.1,0.2,0.3,0.4,0.5,0.6,0.7].forEach(v=>{x.beginPath();x.moveTo(pad,ty(v));x.lineTo(W-pad,ty(v));x.stroke();});
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+  [10,20,30,40,50,60].forEach(v=>x.fillText(v,tx(v)-6,H-pad+13));
+  [0.2,0.4,0.6].forEach(v=>x.fillText(v.toFixed(1),4,ty(v)+4));
+  x.fillText('number of training examples',W/2-65,H-4);
+
+  [[col('blue'),sc.tr],[col('red'),sc.val]].forEach(([c,fn])=>{
+    x.beginPath();x.strokeStyle=c;x.lineWidth=2.5;
+    for(let n=2;n<=N;n++){const y=Math.max(0,Math.min(yhi,fn(n,N)));n===2?x.moveTo(tx(n),ty(y)):x.lineTo(tx(n),ty(y));}
+    x.stroke();
+  });
+  const nb=document.getElementById('n-lc');nb.className='note '+sc.cls;nb.textContent=sc.msg;
+}
+
+document.querySelectorAll('#lc-btns button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#lc-btns button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');lcCur=b.dataset.s;lcDraw();
+  });
+});
+
+let regData=null,regSeed=42;
+function regRegen(){
+  regSeed=Math.floor(Math.random()*99999)+1;
+  regData=null;regDraw();
+}
+function regDraw(){
+  const noise=parseFloat(document.getElementById('r-noise').value);
+  const deg=parseInt(document.getElementById('r-deg').value);
+  const lam=parseFloat(document.getElementById('r-lam').value);
+  document.getElementById('rv-noise').textContent=noise.toFixed(2);
+  document.getElementById('rv-deg').textContent=deg;
+  document.getElementById('rv-lam').textContent=lam.toFixed(2);
+  if(!regData)regData=genPts(25,noise,regSeed);
+  const {xs,ys}=regData;
+  const test=genPts(80,0.08,regSeed+333);
+  const cu=polyFit(xs,ys,deg,0);
+  const cr=polyFit(xs,ys,deg,lam);
+  const eu=mse(test.ys,test.xs.map(x=>polyEval(cu,x)));
+  const er=mse(test.ys,test.xs.map(x=>polyEval(cr,x)));
+  const imp=(eu-er)/eu*100;
+  document.getElementById('rr-u').textContent=eu.toFixed(3);
+  document.getElementById('rr-r').textContent=er.toFixed(3);
+  document.getElementById('rr-i').textContent=(imp>0?'+':'')+imp.toFixed(1)+'%';
+  let cls,msg;
+  if(lam<0.02){cls='red';msg='No penalty applied. The high-degree curve chases every noisy point, producing a wild fit that won\'t generalise. Slide λ up to see regularization take effect.';}
+  else if(lam<0.4){cls='amber';msg=`Penalty λ = ${lam.toFixed(2)}: the curve has smoothed out considerably. Coefficients are being nudged toward smaller values, reducing the erratic wiggles.`;}
+  else{cls='green';msg=`Strong penalty (λ = ${lam.toFixed(2)}): the model is kept on a short leash. Be careful: too much regularization can push the model toward underfitting.`;}
+  const nb=document.getElementById('n-reg');nb.className='note '+cls;nb.textContent=msg;
+
+  const {x,W,H}=cvs('c-reg');
+  const pad=28,ylo=-2.5,yhi=2.5;
+  const {tx,ty}=axes(x,W,H,pad,-1,1,ylo,yhi);
+  curve(x,tx,ty,cu,-1,1,ylo,yhi,col('gray'),1.5,[4,3]);
+  curve(x,tx,ty,cr,-1,1,ylo,yhi,col('green'),2.5);
+  xs.forEach((px,i)=>{x.beginPath();x.arc(tx(px),ty(Math.max(ylo,Math.min(yhi,ys[i]))),4,0,Math.PI*2);x.fillStyle=col('red');x.fill();});
+}
+
+['r-noise','r-deg','r-lam'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    if(id==='r-noise')regData=null;
+    regDraw();
+  });
+});
+
+function bvDraw(){
+  const {x,W,H}=cvs('c-bv');
+  const pad=32,ylo=0,yhi=1,xlo=0,xhi=10;
+  const tx=wx=>(wx-xlo)/(xhi-xlo)*(W-2*pad)+pad;
+  const ty=wy=>H-pad-(wy-ylo)/(yhi-ylo)*(H-2*pad);
+  x.strokeStyle=col('grid');x.lineWidth=0.5;
+  [2,4,6,8,10].forEach(v=>{x.beginPath();x.moveTo(tx(v),pad);x.lineTo(tx(v),H-pad);x.stroke();});
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+  x.fillText('simpler ←  model complexity  → more complex',pad+10,H-4);
+
+  const bias=t=>0.48*Math.exp(-t*0.52);
+  const vari=t=>0.048*(Math.exp(t*0.46)-1);
+  const tot=t=>bias(t)+vari(t)+0.05;
+
+  [[col('blue'),bias],[col('red'),vari],[col('green'),tot]].forEach(([c,fn])=>{
+    x.beginPath();x.strokeStyle=c;x.lineWidth=2;
+    for(let i=0;i<=200;i++){const t=xlo+(xhi-xlo)*i/200;const y=Math.max(0,Math.min(yhi,fn(t)));i===0?x.moveTo(tx(t),ty(y)):x.lineTo(tx(t),ty(y));}
+    x.stroke();
+  });
+  let mx=0,my=1;
+  for(let i=0;i<=500;i++){const t=xlo+(xhi-xlo)*i/500;if(tot(t)<my){my=tot(t);mx=t;}}
+  x.beginPath();x.arc(tx(mx),ty(my),6,0,Math.PI*2);x.fillStyle=col('green');x.fill();
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';x.fillText('sweet spot',tx(mx)+9,ty(my)+4);
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    const id='p-'+t.dataset.t;
+    document.getElementById(id).classList.add('on');
+    if(t.dataset.t==='fit')fitDraw();
+    if(t.dataset.t==='lc')lcDraw();
+    if(t.dataset.t==='reg')regDraw();
+    if(t.dataset.t==='ref')bvDraw();
+  });
+});
+
+fitDraw();
+</script>
+</body>
+</html>
