@@ -26,30 +26,30 @@
   --green:#97c459;--greenbg:#173404;--greentx:#c0dd97;
   --amber:#ef9f27;--amberbg:#412402;--ambertx:#fac775;
 }}
-body{font-family:var(--sans);background:var(--s0);color:var(--tx);padding:1.5rem 1rem;min-height:100vh}
-.wrap{max-width:720px;margin:0 auto}
+body{font-family:var(--sans);background:var(--s0);color:var(--tx);padding:1.5rem 1rem;min-height:100vh;overflow-x:hidden}
+.wrap{max-width:720px;width:100%;margin:0 auto;box-sizing:border-box}
 h1{font-size:22px;font-weight:500;margin-bottom:.2rem}
 .sub{font-size:14px;color:var(--tx2);margin-bottom:1.5rem;line-height:1.6}
 
-.tabs{display:flex;gap:3px;background:var(--s1);border-radius:10px;padding:4px;margin-bottom:1.5rem}
+.tabs{display:flex;gap:3px;background:var(--s1);border-radius:10px;padding:4px;margin-bottom:1.5rem;flex-wrap:wrap}
 .tab{flex:1;padding:7px 4px;font-size:13px;font-family:var(--sans);border:none;border-radius:7px;cursor:pointer;background:transparent;color:var(--tx2);transition:all .15s}
 .tab.on{background:var(--s2);color:var(--tx);font-weight:500;border:0.5px solid var(--bds)}
 .panel{display:none}.panel.on{display:block}
 
-canvas{display:block;width:100%;border-radius:10px;border:0.5px solid var(--bd);background:var(--s2)}
+canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:10px;border:0.5px solid var(--bd);background:var(--s2)}
 
-.ctrl{display:flex;align-items:center;gap:10px;margin-bottom:.7rem}
-.ctrl label{font-size:13px;color:var(--tx2);width:160px;flex-shrink:0}
-.ctrl input[type=range]{flex:1;accent-color:var(--blue)}
-.ctrl .v{font-size:13px;font-weight:500;color:var(--tx);width:42px;text-align:right}
+.ctrl{display:flex;align-items:center;gap:10px;margin-bottom:.7rem;max-width:100%}
+.ctrl label{font-size:13px;color:var(--tx2);width:140px;flex-shrink:0}
+.ctrl input[type=range]{flex:1;min-width:0;max-width:300px;accent-color:var(--blue)}
+.ctrl .v{font-size:13px;font-weight:500;color:var(--tx);width:42px;text-align:right;flex-shrink:0}
 
-.btns{display:flex;gap:6px;margin:.9rem 0;flex-wrap:wrap}
+.btns{display:flex;gap:6px;margin:.9rem 0;flex-wrap:wrap;max-width:100%}
 button{padding:6px 14px;font-size:13px;font-family:var(--sans);border:0.5px solid var(--bds);border-radius:var(--r);background:transparent;color:var(--tx);cursor:pointer;transition:all .12s}
 button:hover{background:var(--s1)}
 button:active{transform:scale(.98)}
 button.hi{background:var(--bluebg);color:var(--bluetx);border-color:var(--blue)}
 
-.stats{display:flex;gap:8px;margin:.9rem 0;flex-wrap:wrap}
+.stats{display:flex;gap:8px;margin:.9rem 0;flex-wrap:wrap;max-width:100%}
 .stat{background:var(--s1);border-radius:var(--r);padding:.5rem .8rem;flex:1;min-width:100px}
 .stat-l{font-size:11px;color:var(--tx2);margin-bottom:2px}
 .stat-v{font-size:15px;font-weight:500}
@@ -67,6 +67,11 @@ button.hi{background:var(--bluebg);color:var(--bluetx);border-color:var(--blue)}
 
 .sec{font-size:16px;font-weight:500;margin:1.5rem 0 .6rem;padding-top:1.25rem;border-top:0.5px solid var(--bd)}
 .prose{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:.75rem}
+.lf-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;margin-bottom:1rem}
+.lf-right{display:flex;flex-direction:column;gap:.75rem}
+.lf-right .sec{margin-top:0;padding-top:0;border-top:none;font-size:13px}
+.lf-right .prose{margin-bottom:.3rem}
+@media(max-width:560px){.lf-grid{grid-template-columns:1fr}}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:.75rem 0}
 @media(max-width:480px){.grid2{grid-template-columns:1fr}}
 .card2{background:var(--s1);border-radius:var(--r);padding:.7rem .9rem}
@@ -199,125 +204,126 @@ td:first-child{color:var(--tx2);font-weight:500}
 </div>
 
   <div id="p-dp" class="panel">
+    <div class="lf-grid">
 
-    <div class="sec" style="margin-top:0;padding-top:0;border-top:none">Data preparation</div>
-    <p class="prose">Before fitting any model, the data itself needs to be in good shape. Two of the most important steps are handling missing values and scaling your features. Getting these wrong can quietly sabotage even a well-chosen model.</p>
+      <!-- LEFT: data preparation -->
+      <div>
+        <div class="sec" style="margin-top:0;padding-top:0;border-top:none">Data preparation</div>
+        <p class="prose">Getting data into shape before fitting any model. Mistakes here can quietly break even a good model.</p>
+        <div class="scen" id="dp-btns">
+          <button class="on" data-dp="missing">Missing values</button>
+          <button data-dp="scaling">Feature scaling</button>
+          <button data-dp="encoding">Encoding</button>
+        </div>
+        <canvas id="c-dp" data-w="340" data-h="220"></canvas>
+        <div id="n-dp" class="note blue" style="margin-top:.6rem;font-size:12px"></div>
 
-    <div class="scen" id="dp-btns">
-      <button class="on" data-dp="missing">Missing values</button>
-      <button data-dp="scaling">Feature scaling</button>
-      <button data-dp="encoding">Encoding categories</button>
-    </div>
-
-    <canvas id="c-dp" data-w="700" data-h="260"></canvas>
-    <div id="n-dp" class="note blue" style="margin-top:.75rem"></div>
-
-    <div class="sec">Linear vs logistic regression</div>
-    <p class="prose">Both are called "regression" but they solve different problems. The choice depends entirely on what you are trying to predict.</p>
-
-    <table>
-      <thead><tr><th></th><th>Linear regression</th><th>Logistic regression</th></tr></thead>
-      <tbody>
-        <tr><td>Predicts</td><td>A continuous number</td><td>A probability (0 to 1), mapped to a class</td></tr>
-        <tr><td>Output range</td><td>Any value on the number line</td><td>Always between 0 and 1</td></tr>
-        <tr><td>Problem type</td><td>Regression</td><td>Classification</td></tr>
-        <tr><td>Loss function</td><td>Mean squared error</td><td>Log loss (cross-entropy)</td></tr>
-        <tr><td>Real-world example</td><td>Predicting a house price from square footage</td><td>Predicting whether an email is spam or not</td></tr>
-        <tr><td>When to use</td><td>The target variable is numeric and continuous</td><td>The target variable is a category (yes/no, cat/dog, etc.)</td></tr>
-      </tbody>
-    </table>
-
-    <canvas id="c-lr" data-w="700" data-h="260"></canvas>
-    <div class="leg" style="margin-top:.6rem">
-      <div class="leg-i"><div class="line" style="background:#185fa5"></div>linear regression</div>
-      <div class="leg-i"><div class="line" style="background:#D85A30"></div>logistic regression (sigmoid)</div>
-      <div class="leg-i"><div class="dot" style="background:#3b6d11"></div>class 1 (positive)</div>
-      <div class="leg-i"><div class="dot" style="background:#888780"></div>class 0 (negative)</div>
-    </div>
-    <p class="prose" style="margin-top:.75rem">Notice how linear regression produces a straight line that can go below 0 and above 1 — useless for probability. Logistic regression squashes the output through a sigmoid function, keeping it between 0 and 1 no matter what.</p>
-
-    <div class="sec">Regularization: Ridge vs Lasso</div>
-    <p class="prose">Both Ridge and Lasso add a penalty to the model to prevent overfitting, but they do it differently and with different effects on the coefficients.</p>
-    <div class="grid2">
-      <div class="card2">
-        <div class="card2-t">Ridge (L2)</div>
-        <div class="card2-b">Adds the <em>sum of squared coefficients</em> as a penalty. Shrinks all coefficients toward zero but rarely to exactly zero. Good when most features contribute something useful. Example: predicting house prices with correlated features like size, rooms, and age.</div>
+        <div class="sec">Regularization</div>
+        <p class="prose">Ridge (L2) shrinks all coefficients. Lasso (L1) drives some to zero, removing features entirely. Drag λ to see the difference.</p>
+        <canvas id="c-coef" data-w="340" data-h="200"></canvas>
+        <div class="leg" style="margin-top:.4rem">
+          <div class="leg-i"><div class="line" style="background:#185fa5"></div>none</div>
+          <div class="leg-i"><div class="line" style="background:#D85A30"></div>Ridge</div>
+          <div class="leg-i"><div class="line" style="background:#3b6d11"></div>Lasso</div>
+        </div>
+        <div class="ctrl" style="margin-top:.6rem">
+          <label>Penalty λ</label>
+          <input type="range" id="dp-lam" min="0" max="1" step="0.02" value="0.3" oninput="coefDraw()">
+          <span class="v" id="dpv-lam">0.30</span>
+        </div>
       </div>
-      <div class="card2">
-        <div class="card2-t">Lasso (L1)</div>
-        <div class="card2-b">Adds the <em>sum of absolute coefficients</em> as a penalty. Can drive some coefficients all the way to zero, effectively removing those features. Good when you suspect many features are irrelevant. Example: predicting loan default from hundreds of financial variables where most don't matter.</div>
-      </div>
-    </div>
-    <canvas id="c-coef" data-w="700" data-h="240"></canvas>
-    <div class="leg" style="margin-top:.6rem">
-      <div class="leg-i"><div class="line" style="background:#185fa5"></div>no regularization</div>
-      <div class="leg-i"><div class="line" style="background:#D85A30"></div>Ridge (L2)</div>
-      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>Lasso (L1)</div>
-    </div>
-    <div class="ctrl" style="margin-top:.9rem"><label>Penalty strength (λ)</label><input type="range" id="dp-lam" min="0" max="1" step="0.02" value="0.3" oninput="coefDraw()"><span class="v" id="dpv-lam">0.30</span></div>
-    <p class="prose">As λ increases, Ridge shrinks all bars evenly. Lasso goes further and drops some bars to zero entirely. That is the key difference.</p>
 
+      <!-- RIGHT: linear vs logistic -->
+      <div>
+        <div class="sec" style="margin-top:0;padding-top:0;border-top:none">Linear vs logistic</div>
+        <p class="prose">Both called "regression" but solving different problems. The choice depends on what you are predicting.</p>
+        <table>
+          <thead><tr><th></th><th>Linear</th><th>Logistic</th></tr></thead>
+          <tbody>
+            <tr><td>Predicts</td><td>A number</td><td>A probability</td></tr>
+            <tr><td>Output</td><td>Any value</td><td>0 to 1</td></tr>
+            <tr><td>Task</td><td>Regression</td><td>Classification</td></tr>
+            <tr><td>Loss</td><td>MSE</td><td>Log loss</td></tr>
+            <tr><td>Example</td><td>House price</td><td>Spam detection</td></tr>
+          </tbody>
+        </table>
+        <canvas id="c-lr" data-w="340" data-h="240"></canvas>
+        <div class="leg" style="margin-top:.4rem">
+          <div class="leg-i"><div class="line" style="background:#185fa5"></div>linear</div>
+          <div class="leg-i"><div class="line" style="background:#D85A30"></div>logistic (sigmoid)</div>
+          <div class="leg-i"><div class="dot" style="background:#3b6d11"></div>class 1</div>
+          <div class="leg-i"><div class="dot" style="background:#888780"></div>class 0</div>
+        </div>
+        <p class="prose" style="margin-top:.6rem;font-size:12px">Linear regression can predict values outside 0–1, which is meaningless for probability. The sigmoid keeps logistic output bounded.</p>
+      </div>
+
+    </div>
   </div>
 
   <div id="p-linfit" class="panel">
-    <p class="prose" style="margin-bottom:1rem">A linear model predicts output as <strong>y = weight &times; x + bias</strong>. Drag the sliders to move the line, watch the loss update live, then let gradient descent find the best fit automatically.</p>
+    <p class="prose" style="margin-bottom:.75rem">A linear model predicts output as <strong>y = weight &times; x + bias</strong>. Drag the sliders to move the line and watch all three plots update live — then press Run to let gradient descent take over.</p>
 
-    <canvas id="c-linfit" data-w="700" data-h="300"></canvas>
-    <div class="leg" style="margin-top:.6rem">
-      <div class="leg-i"><div class="dot" style="background:#D85A30"></div>training data</div>
-      <div class="leg-i"><div class="line" style="background:#185fa5"></div>your model (y = w&middot;x + b)</div>
-      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>best possible fit</div>
-    </div>
+    <div class="lf-grid">
+      <!-- LEFT: fit plot + controls -->
+      <div>
+        <canvas id="c-linfit" data-w="340" data-h="260"></canvas>
+        <div class="leg" style="margin-top:.5rem">
+          <div class="leg-i"><div class="dot" style="background:#D85A30"></div>data</div>
+          <div class="leg-i"><div class="line" style="background:#185fa5"></div>your model</div>
+          <div class="leg-i"><div class="line" style="background:#3b6d11"></div>best fit</div>
+        </div>
+        <div class="ctrl" style="margin-top:.75rem">
+          <label>Weight</label>
+          <input type="range" id="lf-w" min="-3" max="3" step="0.05" value="0" oninput="linfitDraw()">
+          <span class="v" id="lfv-w">0.00</span>
+        </div>
+        <div class="ctrl">
+          <label>Bias</label>
+          <input type="range" id="lf-b" min="-3" max="3" step="0.05" value="0" oninput="linfitDraw()">
+          <span class="v" id="lfv-b">0.00</span>
+        </div>
+        <div class="ctrl">
+          <label>Learning rate</label>
+          <input type="range" id="lf-lr" min="0.001" max="0.5" step="0.001" value="0.05" oninput="lfUpdateLR()">
+          <span class="v" id="lfv-lr">0.050</span>
+        </div>
+        <div class="stats" style="flex-wrap:wrap">
+          <div class="stat" style="min-width:80px"><div class="stat-l">MSE</div><div class="stat-v" id="lf-loss">—</div></div>
+          <div class="stat" style="min-width:80px"><div class="stat-l">Best loss</div><div class="stat-v" id="lf-bestloss">—</div></div>
+          <div class="stat" style="min-width:80px"><div class="stat-l">Steps</div><div class="stat-v" id="lf-steps">0</div></div>
+          <div class="stat" style="min-width:80px"><div class="stat-l">Gradient</div><div class="stat-v" id="lf-gw">—</div></div>
+        </div>
+        <div class="btns" style="flex-wrap:wrap">
+          <button class="hi" id="lf-btn-run" onclick="lfToggleRun()">Run</button>
+          <button onclick="lfStep()">Step</button>
+          <button onclick="lfReset()">Reset</button>
+          <button onclick="lfNewData()">New data</button>
+        </div>
+        <div id="n-linfit" class="note blue" style="margin-top:.6rem;font-size:12px">Adjust sliders or press Run.</div>
+      </div>
 
-    <div class="ctrl" style="margin-top:.9rem">
-      <label>Weight (slope)</label>
-      <input type="range" id="lf-w" min="-3" max="3" step="0.05" value="0" oninput="linfitDraw()">
-      <span class="v" id="lfv-w">0.00</span>
-    </div>
-    <div class="ctrl">
-      <label>Bias (intercept)</label>
-      <input type="range" id="lf-b" min="-3" max="3" step="0.05" value="0" oninput="linfitDraw()">
-      <span class="v" id="lfv-b">0.00</span>
-    </div>
-    <div class="ctrl">
-      <label>Learning rate</label>
-      <input type="range" id="lf-lr" min="0.001" max="0.5" step="0.001" value="0.05" oninput="lfUpdateLR()">
-      <span class="v" id="lfv-lr">0.050</span>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><div class="stat-l">Current MSE</div><div class="stat-v" id="lf-loss">—</div></div>
-      <div class="stat"><div class="stat-l">Best possible loss</div><div class="stat-v" id="lf-bestloss">—</div></div>
-      <div class="stat"><div class="stat-l">Steps taken</div><div class="stat-v" id="lf-steps">0</div></div>
-      <div class="stat"><div class="stat-l">Weight gradient</div><div class="stat-v" id="lf-gw">—</div></div>
-    </div>
-
-    <div class="btns">
-      <button class="hi" id="lf-btn-run" onclick="lfToggleRun()">Run gradient descent</button>
-      <button onclick="lfStep()">Step once</button>
-      <button onclick="lfReset()">Reset</button>
-      <button onclick="lfNewData()">New dataset</button>
-    </div>
-
-    <div id="n-linfit" class="note blue">Adjust weight and bias manually to get the line close to the data, then press Run to watch gradient descent take over.</div>
-
-    <div class="sec">Loss vs iteration</div>
-    <p class="prose">Each time gradient descent takes a step, the loss is recorded here. Try different loss functions to see how they respond differently to outliers and large errors.</p>
-    <canvas id="c-loshist" data-w="700" data-h="260"></canvas>
-    <div class="leg" style="margin-top:.5rem">
-      <div class="leg-i"><div class="line" style="background:#185fa5"></div>MSE</div>
-      <div class="leg-i"><div class="line" style="background:#D85A30"></div>RMSE</div>
-      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>MAE</div>
-      <div class="leg-i"><div class="line" style="background:#854f0b"></div>Huber</div>
-    </div>
-
-    <div class="sec">Loss landscape</div>
-    <p class="prose">A heatmap of the loss across every weight and bias combination. Lighter = higher loss, darker = lower. The green dot is the true minimum; the white dot is where you are now. As gradient descent runs, the red trail shows the path taken across this surface.</p>
-    <canvas id="c-landscape" data-w="700" data-h="280"></canvas>
-    <div class="leg" style="margin-top:.6rem">
-      <div class="leg-i"><div class="dot" style="background:#ffffff;border:1.5px solid #888;box-sizing:border-box"></div>your model</div>
-      <div class="leg-i"><div class="dot" style="background:#3b6d11"></div>minimum (best fit)</div>
-      <div class="leg-i"><div class="line" style="background:#D85A30"></div>path taken</div>
+      <!-- RIGHT: loss history + landscape stacked -->
+      <div class="lf-right">
+        <div>
+          <div class="sec">Loss vs iteration</div>
+          <canvas id="c-loshist" data-w="340" data-h="220"></canvas>
+          <div class="leg" style="margin-top:.4rem">
+            <div class="leg-i"><div class="line" style="background:#185fa5"></div>MSE</div>
+            <div class="leg-i"><div class="line" style="background:#D85A30"></div>RMSE</div>
+            <div class="leg-i"><div class="line" style="background:#3b6d11"></div>MAE</div>
+            <div class="leg-i"><div class="line" style="background:#854f0b"></div>Huber</div>
+          </div>
+        </div>
+        <div>
+          <div class="sec">Loss landscape</div>
+          <canvas id="c-landscape" data-w="340" data-h="260"></canvas>
+          <div class="leg" style="margin-top:.4rem">
+            <div class="leg-i"><div class="dot" style="background:#ffffff;border:1.5px solid #888;box-sizing:border-box"></div>you</div>
+            <div class="leg-i"><div class="dot" style="background:#3b6d11"></div>minimum</div>
+            <div class="leg-i"><div class="line" style="background:#D85A30"></div>path</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -328,7 +334,12 @@ function cvs(id){
   const LW=parseInt(c.getAttribute('data-w')||700);
   const LH=parseInt(c.getAttribute('data-h')||300);
   c.width=LW*dpr; c.height=LH*dpr;
-  c.style.width='100%'; c.style.height=LH+'px';
+  // constrain display to container width, preserve aspect ratio
+  const maxW=Math.min(LW, document.querySelector('.wrap').offsetWidth||LW);
+  const dispH=Math.round(LH*(maxW/LW));
+  c.style.width=maxW+'px';
+  c.style.height=dispH+'px';
+  c.style.maxWidth='100%';
   const x=c.getContext('2d');
   x.setTransform(dpr,0,0,dpr,0,0);
   return {x,W:LW,H:LH};
