@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Overfitting &amp; Underfitting Explorer</title>
+<title>ML Concepts Explorer</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -86,14 +86,16 @@ td:first-child{color:var(--tx2);font-weight:500}
 </head>
 <body>
 <div class="wrap">
-  <h1>Overfitting &amp; Underfitting</h1>
-  <p class="sub">When a model is too simple it misses the pattern. When it's too complex it memorizes the noise. Use the tabs below to explore both problems hands-on.</p>
+  <h1>ML Concepts Explorer</h1>
+  <p class="sub">Hands-on tools for understanding the core ideas behind building and improving machine learning models.</p>
 
   <div class="tabs">
     <button class="tab on" data-t="fit">Fit a curve</button>
     <button class="tab" data-t="lc">Learning curves</button>
     <button class="tab" data-t="reg">Taming overfitting</button>
     <button class="tab" data-t="ref">Quick reference</button>
+    <button class="tab" data-t="dp">Data &amp; models</button>
+    <button class="tab" data-t="linfit">Build a model</button>
   </div>
 
   <div id="p-fit" class="panel on">
@@ -195,6 +197,129 @@ td:first-child{color:var(--tx2);font-weight:500}
     <p class="prose" style="margin-top:.75rem">As you make a model more complex, it becomes less biased (it can fit more patterns) but more variable (it reacts more to noise in the data). The green dot marks the sweet spot, where total error reaches its minimum. Tuning hyperparameters and model selection are really just searches for that point.</p>
   </div>
 </div>
+
+  <div id="p-dp" class="panel">
+
+    <div class="sec" style="margin-top:0;padding-top:0;border-top:none">Data preparation</div>
+    <p class="prose">Before fitting any model, the data itself needs to be in good shape. Two of the most important steps are handling missing values and scaling your features. Getting these wrong can quietly sabotage even a well-chosen model.</p>
+
+    <div class="scen" id="dp-btns">
+      <button class="on" data-dp="missing">Missing values</button>
+      <button data-dp="scaling">Feature scaling</button>
+      <button data-dp="encoding">Encoding categories</button>
+    </div>
+
+    <canvas id="c-dp" data-w="700" data-h="260"></canvas>
+    <div id="n-dp" class="note blue" style="margin-top:.75rem"></div>
+
+    <div class="sec">Linear vs logistic regression</div>
+    <p class="prose">Both are called "regression" but they solve different problems. The choice depends entirely on what you are trying to predict.</p>
+
+    <table>
+      <thead><tr><th></th><th>Linear regression</th><th>Logistic regression</th></tr></thead>
+      <tbody>
+        <tr><td>Predicts</td><td>A continuous number</td><td>A probability (0 to 1), mapped to a class</td></tr>
+        <tr><td>Output range</td><td>Any value on the number line</td><td>Always between 0 and 1</td></tr>
+        <tr><td>Problem type</td><td>Regression</td><td>Classification</td></tr>
+        <tr><td>Loss function</td><td>Mean squared error</td><td>Log loss (cross-entropy)</td></tr>
+        <tr><td>Real-world example</td><td>Predicting a house price from square footage</td><td>Predicting whether an email is spam or not</td></tr>
+        <tr><td>When to use</td><td>The target variable is numeric and continuous</td><td>The target variable is a category (yes/no, cat/dog, etc.)</td></tr>
+      </tbody>
+    </table>
+
+    <canvas id="c-lr" data-w="700" data-h="260"></canvas>
+    <div class="leg" style="margin-top:.6rem">
+      <div class="leg-i"><div class="line" style="background:#185fa5"></div>linear regression</div>
+      <div class="leg-i"><div class="line" style="background:#D85A30"></div>logistic regression (sigmoid)</div>
+      <div class="leg-i"><div class="dot" style="background:#3b6d11"></div>class 1 (positive)</div>
+      <div class="leg-i"><div class="dot" style="background:#888780"></div>class 0 (negative)</div>
+    </div>
+    <p class="prose" style="margin-top:.75rem">Notice how linear regression produces a straight line that can go below 0 and above 1 — useless for probability. Logistic regression squashes the output through a sigmoid function, keeping it between 0 and 1 no matter what.</p>
+
+    <div class="sec">Regularization: Ridge vs Lasso</div>
+    <p class="prose">Both Ridge and Lasso add a penalty to the model to prevent overfitting, but they do it differently and with different effects on the coefficients.</p>
+    <div class="grid2">
+      <div class="card2">
+        <div class="card2-t">Ridge (L2)</div>
+        <div class="card2-b">Adds the <em>sum of squared coefficients</em> as a penalty. Shrinks all coefficients toward zero but rarely to exactly zero. Good when most features contribute something useful. Example: predicting house prices with correlated features like size, rooms, and age.</div>
+      </div>
+      <div class="card2">
+        <div class="card2-t">Lasso (L1)</div>
+        <div class="card2-b">Adds the <em>sum of absolute coefficients</em> as a penalty. Can drive some coefficients all the way to zero, effectively removing those features. Good when you suspect many features are irrelevant. Example: predicting loan default from hundreds of financial variables where most don't matter.</div>
+      </div>
+    </div>
+    <canvas id="c-coef" data-w="700" data-h="240"></canvas>
+    <div class="leg" style="margin-top:.6rem">
+      <div class="leg-i"><div class="line" style="background:#185fa5"></div>no regularization</div>
+      <div class="leg-i"><div class="line" style="background:#D85A30"></div>Ridge (L2)</div>
+      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>Lasso (L1)</div>
+    </div>
+    <div class="ctrl" style="margin-top:.9rem"><label>Penalty strength (λ)</label><input type="range" id="dp-lam" min="0" max="1" step="0.02" value="0.3" oninput="coefDraw()"><span class="v" id="dpv-lam">0.30</span></div>
+    <p class="prose">As λ increases, Ridge shrinks all bars evenly. Lasso goes further and drops some bars to zero entirely. That is the key difference.</p>
+
+  </div>
+
+  <div id="p-linfit" class="panel">
+    <p class="prose" style="margin-bottom:1rem">A linear model predicts output as <strong>y = weight &times; x + bias</strong>. Drag the sliders to move the line, watch the loss update live, then let gradient descent find the best fit automatically.</p>
+
+    <canvas id="c-linfit" data-w="700" data-h="300"></canvas>
+    <div class="leg" style="margin-top:.6rem">
+      <div class="leg-i"><div class="dot" style="background:#D85A30"></div>training data</div>
+      <div class="leg-i"><div class="line" style="background:#185fa5"></div>your model (y = w&middot;x + b)</div>
+      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>best possible fit</div>
+    </div>
+
+    <div class="ctrl" style="margin-top:.9rem">
+      <label>Weight (slope)</label>
+      <input type="range" id="lf-w" min="-3" max="3" step="0.05" value="0" oninput="linfitDraw()">
+      <span class="v" id="lfv-w">0.00</span>
+    </div>
+    <div class="ctrl">
+      <label>Bias (intercept)</label>
+      <input type="range" id="lf-b" min="-3" max="3" step="0.05" value="0" oninput="linfitDraw()">
+      <span class="v" id="lfv-b">0.00</span>
+    </div>
+    <div class="ctrl">
+      <label>Learning rate</label>
+      <input type="range" id="lf-lr" min="0.001" max="0.5" step="0.001" value="0.05" oninput="lfUpdateLR()">
+      <span class="v" id="lfv-lr">0.050</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-l">Current MSE</div><div class="stat-v" id="lf-loss">—</div></div>
+      <div class="stat"><div class="stat-l">Best possible loss</div><div class="stat-v" id="lf-bestloss">—</div></div>
+      <div class="stat"><div class="stat-l">Steps taken</div><div class="stat-v" id="lf-steps">0</div></div>
+      <div class="stat"><div class="stat-l">Weight gradient</div><div class="stat-v" id="lf-gw">—</div></div>
+    </div>
+
+    <div class="btns">
+      <button class="hi" id="lf-btn-run" onclick="lfToggleRun()">Run gradient descent</button>
+      <button onclick="lfStep()">Step once</button>
+      <button onclick="lfReset()">Reset</button>
+      <button onclick="lfNewData()">New dataset</button>
+    </div>
+
+    <div id="n-linfit" class="note blue">Adjust weight and bias manually to get the line close to the data, then press Run to watch gradient descent take over.</div>
+
+    <div class="sec">Loss vs iteration</div>
+    <p class="prose">Each time gradient descent takes a step, the loss is recorded here. Try different loss functions to see how they respond differently to outliers and large errors.</p>
+    <canvas id="c-loshist" data-w="700" data-h="260"></canvas>
+    <div class="leg" style="margin-top:.5rem">
+      <div class="leg-i"><div class="line" style="background:#185fa5"></div>MSE</div>
+      <div class="leg-i"><div class="line" style="background:#D85A30"></div>RMSE</div>
+      <div class="leg-i"><div class="line" style="background:#3b6d11"></div>MAE</div>
+      <div class="leg-i"><div class="line" style="background:#854f0b"></div>Huber</div>
+    </div>
+
+    <div class="sec">Loss landscape</div>
+    <p class="prose">A heatmap of the loss across every weight and bias combination. Lighter = higher loss, darker = lower. The green dot is the true minimum; the white dot is where you are now. As gradient descent runs, the red trail shows the path taken across this surface.</p>
+    <canvas id="c-landscape" data-w="700" data-h="280"></canvas>
+    <div class="leg" style="margin-top:.6rem">
+      <div class="leg-i"><div class="dot" style="background:#ffffff;border:1.5px solid #888;box-sizing:border-box"></div>your model</div>
+      <div class="leg-i"><div class="dot" style="background:#3b6d11"></div>minimum (best fit)</div>
+      <div class="leg-i"><div class="line" style="background:#D85A30"></div>path taken</div>
+    </div>
+  </div>
 
 <script>
 function cvs(id){
@@ -459,10 +584,589 @@ document.querySelectorAll('.tab').forEach(t=>{
     if(t.dataset.t==='lc')lcDraw();
     if(t.dataset.t==='reg')regDraw();
     if(t.dataset.t==='ref')bvDraw();
+    if(t.dataset.t==='dp')dpInit();
+    if(t.dataset.t==='linfit')linfitInit();
   });
 });
 
 fitDraw();
+
+// ---- Data preparation tab ----
+const dpScenes = {
+  missing: {
+    cls: 'amber',
+    msg: 'Missing values left as-is can corrupt distance calculations, break many algorithms entirely, or introduce hidden bias. Common fixes: drop the row, fill with the column mean/median, or use a more sophisticated imputation method.',
+    draw(x,W,H){
+      const pad=40;
+      const tx=i=>pad+i*(W-2*pad)/9;
+      const ty=v=>H-pad-(v/100)*(H-2*pad);
+      const vals=[72,null,65,80,null,58,null,74,68,71];
+      const mean=vals.filter(v=>v!==null).reduce((a,b)=>a+b,0)/vals.filter(v=>v!==null).length;
+      x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+      x.fillText('Feature values across 10 samples (orange = missing)',pad,16);
+      vals.forEach((v,i)=>{
+        if(v===null){
+          x.fillStyle=col('red')+'33';
+          x.fillRect(tx(i)-12,pad,24,H-2*pad);
+          x.fillStyle=col('red');x.font='bold 12px system-ui,sans-serif';
+          x.fillText('?',tx(i)-4,H/2);
+        } else {
+          x.beginPath();x.arc(tx(i),ty(v),6,0,Math.PI*2);x.fillStyle=col('blue');x.fill();
+        }
+      });
+      x.beginPath();x.strokeStyle=col('blue');x.lineWidth=1.5;x.setLineDash([4,3]);
+      x.moveTo(pad,ty(mean));x.lineTo(W-pad,ty(mean));x.stroke();x.setLineDash([]);
+      x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+      x.fillText('mean = '+mean.toFixed(1),W-pad-55,ty(mean)-5);
+    }
+  },
+  scaling: {
+    cls: 'blue',
+    msg: 'When features have very different ranges — say, age (0-100) vs income (0-200,000) — models like k-NN or gradient descent can be thrown off. Standardization (zero mean, unit variance) or min-max scaling puts everything on a level playing field.',
+    draw(x,W,H){
+      const pad=45;
+      const features=[{label:'Age',vals:[22,45,31,58,27],color:'blue',scale:1},{label:'Income ($k)',vals:[280,850,420,1100,310],color:'red',scale:0.1}];
+      x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+      x.fillText('Same 5 people — two features, very different scales',pad,16);
+      const bw=18,gap=60;
+      features.forEach((f,fi)=>{
+        const baseX=pad+fi*(W-2*pad)/2+20;
+        x.fillStyle=col('label');x.font='12px system-ui,sans-serif';
+        x.fillText(f.label,baseX+5,H-8);
+        f.vals.forEach((v,i)=>{
+          const bh=Math.min((v*f.scale/120)*(H-2*pad),H-2*pad);
+          const bx=baseX+i*(bw+4);
+          const by=H-pad-bh;
+          x.fillStyle=col(f.color)+(fi===0?'cc':'88');
+          x.fillRect(bx,by,bw,bh);
+          x.fillStyle=col('label');x.font='9px system-ui,sans-serif';
+          x.fillText(v>999?(v/1000).toFixed(0)+'k':v,bx,by-3);
+        });
+      });
+    }
+  },
+  encoding: {
+    cls: 'blue',
+    msg: 'Machine learning models work with numbers, not text. Categorical variables like "city" or "color" need to be converted. Label encoding assigns an integer to each category, but can imply false ordering. One-hot encoding creates a binary column per category, which is usually safer.',
+    draw(x,W,H){
+      const pad=40;
+      x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+      x.fillText('Encoding the "Color" feature: Red, Green, Blue',pad,18);
+      const rows=[['Red','0','1','0','0'],['Green','1','0','1','0'],['Blue','2','0','0','1']];
+      const headers=['Category','Label enc.','One-hot: Red','One-hot: Green','One-hot: Blue'];
+      const colW=(W-2*pad)/5;
+      headers.forEach((h,i)=>{
+        x.fillStyle=col('label');x.font='bold 11px system-ui,sans-serif';
+        x.fillText(h,pad+i*colW+4,42);
+      });
+      x.strokeStyle=col('grid');x.lineWidth=0.5;
+      x.beginPath();x.moveTo(pad,48);x.lineTo(W-pad,48);x.stroke();
+      rows.forEach((row,ri)=>{
+        const y=68+ri*36;
+        row.forEach((cell,ci)=>{
+          const cx=pad+ci*colW;
+          if(ci===0){x.fillStyle=col('blue');}
+          else if(ci===1){x.fillStyle=col('red');}
+          else{x.fillStyle=cell==='1'?col('green'):col('label');}
+          x.font=(cell==='1'?'bold ':'')+'13px system-ui,sans-serif';
+          x.fillText(cell,cx+4,y);
+        });
+        x.strokeStyle=col('grid');x.lineWidth=0.5;
+        x.beginPath();x.moveTo(pad,y+10);x.lineTo(W-pad,y+10);x.stroke();
+      });
+    }
+  }
+};
+
+let dpCur='missing';
+function dpDraw(){
+  const sc=dpScenes[dpCur];
+  const {x,W,H}=cvs('c-dp');
+  sc.draw(x,W,H);
+  const nb=document.getElementById('n-dp');nb.className='note '+sc.cls;nb.textContent=sc.msg;
+}
+
+document.querySelectorAll('#dp-btns button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#dp-btns button').forEach(z=>z.classList.remove('on'));
+    b.classList.add('on');dpCur=b.dataset.dp;dpDraw();
+  });
+});
+
+function lrDraw(){
+  const {x,W,H}=cvs('c-lr');
+  const pad=40;
+  const tx=v=>(v+0.5)/(10.5)*(W-2*pad)+pad;
+  const ty=v=>H-pad-v*(H-2*pad);
+  x.strokeStyle=col('grid');x.lineWidth=0.5;
+  [0.25,0.5,0.75,1].forEach(v=>{x.beginPath();x.moveTo(pad,ty(v));x.lineTo(W-pad,ty(v));x.stroke();});
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+  [0,0.25,0.5,0.75,1].forEach(v=>x.fillText(v.toFixed(2),4,ty(v)+4));
+  x.fillText('← not spam                        spam →',pad+20,H-6);
+
+  // data points
+  const pts=[[0.5,0],[1,0],[1.5,0],[2,0],[2.5,0],[3,0],[4,0],[5,1],[6,1],[7,1],[7.5,1],[8,1],[8.5,1],[9,1]];
+  pts.forEach(([px,py])=>{
+    x.beginPath();x.arc(tx(px),ty(py===1?0.92:0.08),5,0,Math.PI*2);
+    x.fillStyle=py===1?col('green'):col('gray');x.fill();
+  });
+
+  // linear regression line
+  x.beginPath();x.strokeStyle=col('blue');x.lineWidth=2;
+  x.moveTo(tx(0),ty(-0.05));x.lineTo(tx(10),ty(1.05));x.stroke();
+
+  // logistic sigmoid
+  x.beginPath();x.strokeStyle=col('red');x.lineWidth=2.5;
+  for(let i=0;i<=200;i++){
+    const px=i/200*10;
+    const py=1/(1+Math.exp(-(px-5)*1.2));
+    i===0?x.moveTo(tx(px),ty(py)):x.lineTo(tx(px),ty(py));
+  }
+  x.stroke();
+
+  // threshold line
+  x.strokeStyle=col('label');x.lineWidth=1;x.setLineDash([3,3]);
+  x.beginPath();x.moveTo(pad,ty(0.5));x.lineTo(W-pad,ty(0.5));x.stroke();x.setLineDash([]);
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+  x.fillText('decision threshold (0.5)',W-pad-145,ty(0.5)-5);
+  x.fillText('Linear regression can predict probabilities outside 0-1',pad,18);
+}
+
+function coefDraw(){
+  const lam=parseFloat(document.getElementById('dp-lam').value);
+  document.getElementById('dpv-lam').textContent=lam.toFixed(2);
+  const {x,W,H}=cvs('c-coef');
+  const pad=44;
+  const labels=['x1','x2','x3','x4','x5','x6','x7','x8'];
+  const trueCoef=[0.8,-0.5,1.2,0.1,-0.9,0.3,1.0,-0.2];
+  const ridge=trueCoef.map(c=>c/(1+lam*8));
+  const l1thresh=lam*0.6;
+  const lasso=trueCoef.map(c=>Math.abs(c)>l1thresh?c-Math.sign(c)*l1thresh:0);
+  const n=labels.length;
+  const bw=18,groupW=(W-2*pad)/n;
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+  x.fillText('Coefficient values as λ increases ('+labels.length+' features)',pad,14);
+  const zero=H/2;
+  x.strokeStyle=col('axis');x.lineWidth=1;x.beginPath();x.moveTo(pad,zero);x.lineTo(W-pad,zero);x.stroke();
+  const scale=(H/2-pad-10);
+  [[trueCoef,col('blue')],[ridge,col('red')],[lasso,col('green')]].forEach(([coefs,c],si)=>{
+    coefs.forEach((v,i)=>{
+      const cx=pad+i*groupW+si*(bw+2)+4;
+      const bh=Math.abs(v)*scale;
+      const by=v>=0?zero-bh:zero;
+      x.fillStyle=c+'cc';
+      x.fillRect(cx,by,bw,bh||1);
+    });
+  });
+  labels.forEach((l,i)=>{
+    x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+    x.fillText(l,pad+i*groupW+groupW/2-6,H-6);
+  });
+}
+
+function dpInit(){dpDraw();lrDraw();coefDraw();}
+
+// ---- Build a model tab ----
+let lfData=null, lfSeed=7, lfW=0, lfB=0, lfLR=0.05;
+let lfRunning=false, lfTimer=null, lfSteps=0;
+let lfBestW=1, lfBestB=0, lfPath=[];
+
+function lfGenData(){
+  resetRng(lfSeed);
+  const xs=[], ys=[];
+  for(let i=0;i<30;i++){
+    const x=-2.5+5*rng();
+    xs.push(x);
+    ys.push(1.4*x+0.6+randn()*0.55);
+  }
+  const n=xs.length;
+  const mx=xs.reduce((a,b)=>a+b,0)/n;
+  const my=ys.reduce((a,b)=>a+b,0)/n;
+  const num=xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
+  const den=xs.reduce((s,x)=>s+(x-mx)**2,0);
+  lfBestW=num/den;
+  lfBestB=my-lfBestW*mx;
+  return {xs,ys};
+}
+
+function lfMSE(w,b){
+  const {xs,ys}=lfData;
+  return xs.reduce((s,x,i)=>s+(w*x+b-ys[i])**2,0)/xs.length;
+}
+
+function lfGrads(w,b){
+  const {xs,ys}=lfData;
+  const n=xs.length;
+  let gw=0,gb=0;
+  xs.forEach((x,i)=>{const e=w*x+b-ys[i];gw+=2*e*x;gb+=2*e;});
+  return {gw:gw/n,gb:gb/n};
+}
+
+function linfitDraw(){
+  lfW=parseFloat(document.getElementById('lf-w').value);
+  lfB=parseFloat(document.getElementById('lf-b').value);
+  document.getElementById('lfv-w').textContent=lfW.toFixed(2);
+  document.getElementById('lfv-b').textContent=lfB.toFixed(2);
+  lfRender();
+}
+
+function lfRender(){
+  if(!lfData)lfData=lfGenData();
+  const {xs,ys}=lfData;
+  const loss=lfMSE(lfW,lfB);
+  const bestLoss=lfMSE(lfBestW,lfBestB);
+  const {gw}=lfGrads(lfW,lfB);
+  document.getElementById('lf-loss').textContent=loss.toFixed(4);
+  document.getElementById('lf-bestloss').textContent=bestLoss.toFixed(4);
+
+  document.getElementById('lf-steps').textContent=lfSteps;
+  document.getElementById('lf-gw').textContent=gw.toFixed(4);
+  document.getElementById('lfv-w').textContent=lfW.toFixed(2);
+  document.getElementById('lfv-b').textContent=lfB.toFixed(2);
+  document.getElementById('lf-w').value=lfW;
+  document.getElementById('lf-b').value=lfB;
+
+  const nb=document.getElementById('n-linfit');
+  const gap=loss-bestLoss;
+  if(lfSteps===0&&loss>2){nb.className='note amber';nb.textContent='The line is far from the data. Adjust weight and bias to get it closer, or press Run to let gradient descent do it.';}
+  else if(gap<0.02){nb.className='note green';nb.textContent='Converged after '+lfSteps+' steps. Loss is '+loss.toFixed(4)+', very close to the theoretical minimum of '+bestLoss.toFixed(4)+'.';}
+  else if(lfRunning){nb.className='note blue';nb.textContent='Step '+lfSteps+': weight = '+lfW.toFixed(3)+', bias = '+lfB.toFixed(3)+', loss = '+loss.toFixed(4)+'. Gradient descent is moving the line toward the data.';}
+  else{nb.className='note blue';nb.textContent='Weight = '+lfW.toFixed(2)+', bias = '+lfB.toFixed(2)+', loss = '+loss.toFixed(4)+'. Press Run to let gradient descent take over.';}
+
+  const {x,W,H}=cvs('c-linfit');
+  const pad=32, xlo=-3, xhi=3, ylo=-5, yhi=7;
+  const tx=wx=>(wx-xlo)/(xhi-xlo)*(W-2*pad)+pad;
+  const ty=wy=>H-pad-(wy-ylo)/(yhi-ylo)*(H-2*pad);
+  x.strokeStyle=col('grid');x.lineWidth=0.5;
+  for(let v=-2;v<=2;v++){x.beginPath();x.moveTo(tx(v),pad);x.lineTo(tx(v),H-pad);x.stroke();}
+  x.strokeStyle=col('axis');x.lineWidth=1;
+  x.beginPath();x.moveTo(pad,ty(0));x.lineTo(W-pad,ty(0));x.stroke();
+  x.beginPath();x.moveTo(tx(0),pad);x.lineTo(tx(0),H-pad);x.stroke();
+
+  xs.forEach((px,i)=>{
+    const pred=Math.max(ylo,Math.min(yhi,lfW*px+lfB));
+    const actual=Math.max(ylo,Math.min(yhi,ys[i]));
+    x.beginPath();x.strokeStyle=col('red')+'55';x.lineWidth=1;
+    x.moveTo(tx(px),ty(actual));x.lineTo(tx(px),ty(pred));x.stroke();
+  });
+
+  x.beginPath();x.strokeStyle=col('green');x.lineWidth=1.5;x.setLineDash([5,4]);
+  x.moveTo(tx(xlo),ty(lfBestW*xlo+lfBestB));x.lineTo(tx(xhi),ty(lfBestW*xhi+lfBestB));
+  x.stroke();x.setLineDash([]);
+
+  x.beginPath();x.strokeStyle=col('blue');x.lineWidth=2.5;
+  x.moveTo(tx(xlo),ty(Math.max(ylo,Math.min(yhi,lfW*xlo+lfB))));
+  x.lineTo(tx(xhi),ty(Math.max(ylo,Math.min(yhi,lfW*xhi+lfB))));
+  x.stroke();
+
+  xs.forEach((px,i)=>{
+    x.beginPath();x.arc(tx(px),ty(Math.max(ylo,Math.min(yhi,ys[i]))),5,0,Math.PI*2);
+    x.fillStyle=col('red');x.fill();
+  });
+
+  x.fillStyle=col('label');x.font='12px system-ui,sans-serif';
+  x.fillText('y = '+lfW.toFixed(2)+'x + ('+lfB.toFixed(2)+')',pad+8,pad+16);
+
+  lossHistDraw();
+  landscapeDraw();
+}
+
+// ── Loss functions ──
+let lfLossType='mse';
+const lossTypes={
+  mse:{
+    name:'MSE',
+    fn(w,b){const {xs,ys}=lfData;return xs.reduce((s,x,i)=>s+(w*x+b-ys[i])**2,0)/xs.length;},
+    label:'Mean Squared Error — penalises large errors heavily'
+  },
+  rmse:{
+    name:'RMSE',
+    fn(w,b){const {xs,ys}=lfData;return Math.sqrt(xs.reduce((s,x,i)=>s+(w*x+b-ys[i])**2,0)/xs.length);},
+    label:'Root MSE — same as MSE but in the original units'
+  },
+  mae:{
+    name:'MAE',
+    fn(w,b){const {xs,ys}=lfData;return xs.reduce((s,x,i)=>s+Math.abs(w*x+b-ys[i]),0)/xs.length;},
+    label:'Mean Absolute Error — treats all errors equally, robust to outliers'
+  },
+  huber:{
+    name:'Huber',
+    fn(w,b){
+      const {xs,ys}=lfData;const d=1;
+      return xs.reduce((s,x,i)=>{const e=Math.abs(w*x+b-ys[i]);return s+(e<=d?0.5*e*e:d*(e-0.5*d));},0)/xs.length;
+    },
+    label:'Huber — quadratic for small errors, linear for large ones (best of both)'
+  }
+};
+
+function lfLoss(w,b){return lossTypes[lfLossType].fn(w,b);}
+
+function lfGrads(w,b){
+  const {xs,ys}=lfData;
+  const n=xs.length;
+  // always use MSE gradients for descent — loss type is display only
+  let gw=0,gb=0;
+  xs.forEach((x,i)=>{const e=w*x+b-ys[i];gw+=2*e*x;gb+=2*e;});
+  return {gw:gw/n,gb:gb/n};
+}
+
+// ── Loss history ──
+let lfLossHistory=[];
+
+// per-loss-type history arrays
+let lfHistories={mse:[],rmse:[],mae:[],huber:[]};
+
+function lfRecordLoss(){
+  const w=lfW,b=lfB;
+  lfHistories.mse.push(lossTypes.mse.fn(w,b));
+  lfHistories.rmse.push(lossTypes.rmse.fn(w,b));
+  lfHistories.mae.push(lossTypes.mae.fn(w,b));
+  lfHistories.huber.push(lossTypes.huber.fn(w,b));
+}
+
+function lossHistDraw(){
+  const {x,W,H}=cvs('c-loshist');
+  const pad=44;
+  const n=lfHistories.mse.length;
+
+  if(n<2){
+    x.fillStyle=col('label');x.font='13px system-ui,sans-serif';
+    x.fillText('Run gradient descent to see all four loss curves here.',pad+10,H/2);
+    return;
+  }
+
+  const series=[
+    {key:'mse',  label:'MSE',   color:col('blue')},
+    {key:'rmse', label:'RMSE',  color:col('red')},
+    {key:'mae',  label:'MAE',   color:col('green')},
+    {key:'huber',label:'Huber', color:col('amber')},
+  ];
+
+  // find global max across all series for shared y-axis
+  let maxL=0;
+  series.forEach(({key})=>lfHistories[key].forEach(v=>{if(v>maxL)maxL=v;}));
+  maxL=maxL*1.08||1;
+
+  const ti=i=>pad+(i/(n-1))*(W-2*pad);
+  const tv=v=>H-pad-Math.max(0,v/maxL)*(H-2*pad);
+
+  // grid
+  x.strokeStyle=col('grid');x.lineWidth=0.5;
+  [0.25,0.5,0.75,1].forEach(t=>{
+    const v=t*maxL;
+    x.beginPath();x.moveTo(pad,tv(v));x.lineTo(W-pad,tv(v));x.stroke();
+    x.fillStyle=col('label');x.font='10px system-ui,sans-serif';
+    x.fillText(v.toFixed(2),2,tv(v)+4);
+  });
+  [0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1].forEach(i=>{
+    x.fillStyle=col('label');x.font='10px system-ui,sans-serif';
+    x.fillText(i,ti(i)-8,H-pad+13);
+  });
+  x.fillStyle=col('label');x.font='11px system-ui,sans-serif';
+  x.fillText('iteration',W/2-22,H-5);
+  x.fillText('loss value',6,pad-8);
+
+  // axes
+  x.strokeStyle=col('axis');x.lineWidth=1;
+  x.beginPath();x.moveTo(pad,pad);x.lineTo(pad,H-pad);x.lineTo(W-pad,H-pad);x.stroke();
+
+  // draw each loss curve
+  series.forEach(({key,label,color})=>{
+    const hist=lfHistories[key];
+    x.beginPath();x.strokeStyle=color;x.lineWidth=2.2;x.setLineDash([]);
+    hist.forEach((v,i)=>i===0?x.moveTo(ti(i),tv(v)):x.lineTo(ti(i),tv(v)));
+    x.stroke();
+    // end label
+    const last=hist[hist.length-1];
+    x.fillStyle=color;x.font='bold 11px system-ui,sans-serif';
+    x.fillText(label+' '+last.toFixed(2),ti(n-1)+4,tv(last)+4);
+  });
+}
+
+// ── Loss landscape ──
+let lfLandscapeCache=null;
+let lfLandscapeSeed=null;
+
+function landscapeDraw(){
+  const {x,W,H}=cvs('c-landscape');
+  const pad=40;
+  const wlo=-3,whi=3,blo=-3,bhi=3;
+  const tw=wx=>(wx-wlo)/(whi-wlo)*(W-2*pad)+pad;
+  const tb=by=>H-pad-(by-blo)/(bhi-blo)*(H-2*pad);
+  const iw=Math.floor(W-2*pad);
+  const ih=Math.floor(H-2*pad);
+
+  // recompute heatmap only when data changes
+  if(!lfLandscapeCache||lfLandscapeSeed!==lfSeed){
+    lfLandscapeSeed=lfSeed;
+    // draw directly into an offscreen canvas at full W×H so DPR scaling is irrelevant
+    const off=document.createElement('canvas');
+    off.width=W; off.height=H;
+    const ox=off.getContext('2d');
+    const img=ox.createImageData(W,H);
+    const losses=new Float32Array(W*H);
+    let minL=Infinity,maxL=0;
+    for(let pi=0;pi<W;pi++){
+      const w=wlo+(whi-wlo)*(pi-pad)/(W-2*pad);
+      for(let pj=0;pj<H;pj++){
+        const b=bhi-(bhi-blo)*(pj-pad)/(H-2*pad);
+        const l=(pi<pad||pi>W-pad||pj<pad||pj>H-pad)?0:lfMSE(w,b);
+        losses[pj*W+pi]=l;
+        if(pi>=pad&&pi<=W-pad&&pj>=pad&&pj<=H-pad){
+          if(l<minL)minL=l;
+          if(l>maxL)maxL=l;
+        }
+      }
+    }
+    const d=dark();
+    for(let pi=0;pi<W;pi++){
+      for(let pj=0;pj<H;pj++){
+        const idx=(pj*W+pi)*4;
+        if(pi<pad||pi>W-pad||pj<pad||pj>H-pad){
+          // margin — transparent, let canvas bg show
+          img.data[idx]=0;img.data[idx+1]=0;img.data[idx+2]=0;img.data[idx+3]=0;
+          continue;
+        }
+        const l=losses[pj*W+pi];
+        const t=Math.sqrt(Math.min(1,(l-minL)/(maxL-minL)));
+        if(d){
+          img.data[idx]=Math.round(t*220);
+          img.data[idx+1]=Math.round(t*180+(1-t)*60);
+          img.data[idx+2]=Math.round((1-t)*160+t*20);
+        } else {
+          img.data[idx]=Math.round(20*(1-t)+240*t);
+          img.data[idx+1]=Math.round(60*(1-t)+220*t);
+          img.data[idx+2]=Math.round(180*(1-t)+20*t);
+        }
+        img.data[idx+3]=255;
+      }
+    }
+    ox.putImageData(img,0,0);
+    lfLandscapeCache={canvas:off,tw,tb,W,H};
+  }
+  // stamp the offscreen canvas — it is already in logical pixels, ctx transform handles DPR
+  x.save();
+  x.setTransform(1,0,0,1,0,0); // bypass DPR transform for drawImage
+  const dpr=window.devicePixelRatio||1;
+  x.drawImage(lfLandscapeCache.canvas,0,0,W*dpr,H*dpr);
+  x.setTransform(dpr,0,0,dpr,0,0); // restore DPR transform for everything else
+  x.restore();
+
+  // axis labels
+  const d=dark();
+  x.fillStyle=col('label');x.font='10px system-ui,sans-serif';
+  [-2,-1,0,1,2].forEach(v=>{
+    x.fillText('w='+v,tw(v)-10,H-pad+13);
+    x.fillText('b='+v,2,tb(v)+4);
+  });
+  x.fillText('weight (w) →',W/2-30,H-4);
+  x.save();x.translate(10,H/2+20);x.rotate(-Math.PI/2);x.fillText('bias (b) →',0,0);x.restore();
+
+  // colour key
+  const kx=W-pad-110, ky=pad+6, kw=100, kh=10;
+  const grad=x.createLinearGradient(kx,0,kx+kw,0);
+  if(d){grad.addColorStop(0,'#3c96a0');grad.addColorStop(1,'#dcc814');}
+  else{grad.addColorStop(0,'#1440b4');grad.addColorStop(1,'#f0dc14');}
+  x.fillStyle=grad;x.fillRect(kx,ky,kw,kh);
+  x.fillStyle=col('label');x.font='9px system-ui,sans-serif';
+  x.fillText('low loss',kx,ky+kh+10);
+  x.fillText('high',kx+kw-20,ky+kh+10);
+
+  // path taken
+  if(lfPath.length>1){
+    x.beginPath();x.strokeStyle='rgba(255,80,80,0.85)';x.lineWidth=1.5;x.setLineDash([]);
+    lfPath.forEach(([pw,pb],i)=>{
+      const px2=Math.max(pad,Math.min(W-pad,tw(pw)));
+      const py2=Math.max(pad,Math.min(H-pad,tb(pb)));
+      i===0?x.moveTo(px2,py2):x.lineTo(px2,py2);
+    });
+    x.stroke();
+    // arrowhead at end
+    const last=lfPath[lfPath.length-1];
+    const prev=lfPath[lfPath.length-2]||last;
+    const ax=tw(last[0]),ay=tb(last[1]);
+    const dx=ax-tw(prev[0]),dy=ay-tb(prev[1]);
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    const nx=dx/len,ny=dy/len;
+    x.beginPath();x.fillStyle='rgba(255,80,80,0.9)';
+    x.moveTo(ax,ay);x.lineTo(ax-nx*8-ny*5,ay-ny*8+nx*5);x.lineTo(ax-nx*8+ny*5,ay-ny*8-nx*5);
+    x.closePath();x.fill();
+  }
+
+  // minimum dot (green)
+  const gx=Math.max(pad+7,Math.min(W-pad-7,tw(lfBestW)));
+  const gy=Math.max(pad+7,Math.min(H-pad-7,tb(lfBestB)));
+  x.beginPath();x.arc(gx,gy,7,0,Math.PI*2);
+  x.fillStyle=col('green');x.fill();
+  x.strokeStyle=d?'#1a1a18':'white';x.lineWidth=2;x.stroke();
+
+  // current position dot (white/dark)
+  const cx2=Math.max(pad+7,Math.min(W-pad-7,tw(lfW)));
+  const cy2=Math.max(pad+7,Math.min(H-pad-7,tb(lfB)));
+  x.beginPath();x.arc(cx2,cy2,7,0,Math.PI*2);
+  x.fillStyle=d?'white':'#111';x.fill();
+  x.strokeStyle=d?'#aaa':'white';x.lineWidth=2;x.stroke();
+}
+
+function lfStep(){
+  if(!lfData)lfData=lfGenData();
+  const {gw,gb}=lfGrads(lfW,lfB);
+  lfPath.push([lfW,lfB]);
+  if(lfPath.length>150)lfPath.shift();
+  lfW=Math.max(-3,Math.min(3,lfW-lfLR*gw));
+  lfB=Math.max(-3,Math.min(3,lfB-lfLR*gb));
+  lfSteps++;
+  lfRecordLoss();
+  lfRender();
+  if(lfMSE(lfW,lfB)-lfMSE(lfBestW,lfBestB)<0.01)lfStop();
+}
+
+function lfStop(){
+  lfRunning=false;
+  clearInterval(lfTimer);
+  document.getElementById('lf-btn-run').textContent='Run gradient descent';
+}
+
+function lfToggleRun(){
+  if(lfRunning){lfStop();}
+  else{
+    lfRunning=true;
+    document.getElementById('lf-btn-run').textContent='Pause';
+    lfTimer=setInterval(lfStep,80);
+  }
+}
+
+function lfReset(){
+  lfStop();
+  lfW=0;lfB=0;lfSteps=0;lfPath=[];lfHistories={mse:[],rmse:[],mae:[],huber:[]};
+  document.getElementById('lf-w').value=0;
+  document.getElementById('lf-b').value=0;
+  lfRender();
+}
+
+function lfNewData(){
+  lfStop();
+  lfSeed=Math.floor(Math.random()*99999)+1;
+  lfData=null;lfSteps=0;lfPath=[];lfHistories={mse:[],rmse:[],mae:[],huber:[]};lfLandscapeCache=null;
+  lfW=0;lfB=0;
+  document.getElementById('lf-w').value=0;
+  document.getElementById('lf-b').value=0;
+  lfData=lfGenData();
+  lfRender();
+}
+
+function lfUpdateLR(){
+  lfLR=parseFloat(document.getElementById('lf-lr').value);
+  document.getElementById('lfv-lr').textContent=lfLR.toFixed(3);
+}
+
+function linfitInit(){
+  if(!lfData)lfData=lfGenData();
+  lfLandscapeCache=null;
+  lfRender();
+}
+
+
 </script>
 </body>
 </html>
